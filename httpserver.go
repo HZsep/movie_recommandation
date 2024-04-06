@@ -2,11 +2,13 @@
 
 import (
  "fmt"
+ "io/ioutil"
  "net/http"
 )
 
 // HandlerFunc defines the request handler used by the web framework
 type HandlerFunc func(http.ResponseWriter, *http.Request)
+
 
 // Engine is the core of the web framework
 type Engine struct {
@@ -35,6 +37,28 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
  }
 }
 
+func Google(w http.ResponseWriter, req *http.Request){
+
+    url := "https://www.google.com"
+
+    resp,err := http.Get(url)
+
+    if err != nil{
+        http.Error(w,"Failed",http.StatusInternalServerError)
+        return 
+    }
+    defer resp.Body.Close()
+
+    body ,err := ioutil.ReadAll(resp.Body)
+
+    if err != nil{
+        http.Error(w,"Failed",http.StatusInternalServerError)
+        return 
+    }
+
+    w.Write(body)
+}
+
 func main() {
  engine := NewEngine()
 
@@ -45,6 +69,10 @@ func main() {
  engine.AddRoute("GET", "/hello", func(w http.ResponseWriter, req *http.Request) {
   fmt.Fprintf(w, "Hello, world!")
  })
-
+ engine.AddRoute("GET", "/goo", Google)
  http.ListenAndServe(":8080", engine)
 }                                                                         
+
+
+
+
